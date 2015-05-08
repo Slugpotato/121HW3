@@ -1,6 +1,7 @@
 package com.dealfaro.luca.clicker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,7 +23,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -54,9 +54,9 @@ public class MainActivity extends ActionBarActivity {
     private static final float GOOD_ACCURACY_METERS = 100;
 
     // This is an id for my app, to keep the key space separate from other apps.
-    private static final String MY_APP_ID = "luca_bboard";
+    private static final String MY_APP_ID = "PotatoSlugs";
 
-    private static final String SERVER_URL_PREFIX = "https://luca-teaching.appspot.com/store/default/";
+    private static final String SERVER_URL_PREFIX = "https://hw3n-dot-luca-teaching.appspot.com/store/default/";
 
     // To remember the favorite account.
     public static final String PREF_ACCOUNT = "pref_account";
@@ -77,6 +77,8 @@ public class MainActivity extends ActionBarActivity {
 
         public String textLabel;
         public String buttonLabel;
+        public String userid;
+
     }
 
     private ArrayList<ListElement> aList;
@@ -99,7 +101,7 @@ public class MainActivity extends ActionBarActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             LinearLayout newView;
 
-            ListElement w = getItem(position);
+            final ListElement w = getItem(position);
 
             // Inflate a new view if necessary.
             if (convertView == null) {
@@ -117,6 +119,7 @@ public class MainActivity extends ActionBarActivity {
             tv.setText(w.textLabel);
             b.setText(w.buttonLabel);
 
+
             // Sets a listener for the button, and a tag for the button as well.
             b.setTag(new Integer(position));
             b.setOnClickListener(new View.OnClickListener() {
@@ -124,10 +127,22 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     // Reacts to a button press.
                     // Gets the integer tag of the button.
-                    String s = v.getTag().toString();
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, s, duration);
-                    toast.show();
+//                    String s = v.getTag().toString();
+//                    int duration = Toast.LENGTH_SHORT;
+//                    Toast toast = Toast.makeText(context, s, duration);
+//                    toast.show();
+
+                    //String s = v.getTag().toString();
+                    if(!w.userid.equals(MY_APP_ID)) {
+                        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                        intent.putExtra("dest", w.userid);
+                        Log.v(TAG, "appInfo = " + appInfo.userid);
+                        Log.v(TAG, "userid " + w.userid);
+                        //intent.putExtra("conversation", true);
+                        startActivity(intent);
+                        context.startActivity(intent);
+                    }
+
                 }
             });
 
@@ -136,10 +151,17 @@ public class MainActivity extends ActionBarActivity {
             newView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String s = v.getTag().toString();
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, s, duration);
-                    toast.show();
+                    if(!w.userid.equals(MY_APP_ID)) {
+                        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                        intent.putExtra("dest", w.userid);
+                        Log.v(TAG, "appInfo = " + appInfo.userid);
+                        Log.v(TAG, "userid " + w.userid);
+                        //intent.putExtra("conversation", true);
+                        startActivity(intent);
+                        context.startActivity(intent);
+                    }
+
+
                 }
             });
 
@@ -149,7 +171,7 @@ public class MainActivity extends ActionBarActivity {
 
     private MyAdapter aa;
 
-    //AppInfo appInfo;
+    AppInfo appInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,12 +238,6 @@ public class MainActivity extends ActionBarActivity {
         // First super, then do stuff.
         // Let us display the previous posts, if any.
 
-
-//        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-//        String result = settings.getString(PREF_POSTS, null);
-//        if (result != null) {
-//            displayResult(result);
-//        }
     }
 
     @Override
@@ -299,10 +315,12 @@ public class MainActivity extends ActionBarActivity {
 
         // Let's add the parameters.
         HashMap<String,String> m = new HashMap<String,String>();
-        m.put("app_id", MY_APP_ID);
+        m.put("msgid", reallyComputeHash(msg));
         m.put("msg", msg);
         m.put("lat", lat);
         m.put("lng", lng);
+        m.put("userid", appInfo.PREF_USERID);
+
         myCallSpec.setParams(m);
         // Actual server call.
         if (uploader != null) {
@@ -314,10 +332,6 @@ public class MainActivity extends ActionBarActivity {
 
 
     }
-
-
-
-
 
 
     View.OnClickListener refresh = new View.OnClickListener() {
@@ -351,8 +365,6 @@ public class MainActivity extends ActionBarActivity {
             }
             uploader = new ServerCall();
             uploader.execute(myCallSpec);
-
-
 
         }
     };
@@ -408,7 +420,8 @@ public class MainActivity extends ActionBarActivity {
         for (int i = 0; i < ml.messages.length; i++) {
             ListElement ael = new ListElement();
             ael.textLabel = ml.messages[i].msg+"\n"+ml.messages[i].ts;
-            ael.buttonLabel = "Click";
+            ael.buttonLabel = "Talk";
+            ael.userid = ml.messages[i].userid;
             aList.add(ael);
         }
         aa.notifyDataSetChanged();

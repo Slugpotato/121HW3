@@ -6,9 +6,12 @@ package com.dealfaro.luca.clicker;
 public class MsgInfo {
     public MsgInfo() {};
 
-    String msg;
-    String dest;
-    String userid;
-    String msgid;
-    String ts;
+    public String msg;
+    public String userid;
+    public String dest;
+    public String ts;
+    public String msgid;
+    public Boolean conversation;
+
 }
+
